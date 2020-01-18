@@ -1,0 +1,1 @@
+docker exec -it lamp_mysql_1 sh -c 'mysqldump wordpress -u wp_user -pwp_pass 2> /dev/null' > ./sql/mysql-wordpress-dump.sql

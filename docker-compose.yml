@@ -1,0 +1,100 @@
+version: '3.3'
+networks:
+  main:
+  mongodb-cluster:
+    #external: true
+    #name: mongodb-cluster
+volumes:
+  esdata1:
+    driver: local
+services:
+  mongodb1:
+    #build: ./mongodb
+    image: mongo:4.0.14
+    restart: always
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=root
+    #   - MONGO_INITDB_ROOT_PASSWORD=example
+    #   - MONGODB_USER=user
+    #   - MONGODB_PASS=password
+    container_name: mongodb1
+    hostname: mongodb1
+    ports:
+      - 17017:27017
+    volumes:
+      - ./mongodb1:/data/db
+    networks:
+      - mongodb-cluster
+    command: [mongod, --replSet, mongodb-repl-set]
+    depends_on:
+      - mongodb2
+      - mongodb3
+  mongodb2:
+    image: mongo:4.0.14
+    restart: always
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=root
+    #   - MONGO_INITDB_ROOT_PASSWORD=example
+    #   - MONGODB_USER=user
+    #   - MONGODB_PASS=password
+    container_name: mongodb2
+    hostname: mongodb2
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongodb2:/data/db
+    networks:
+      - mongodb-cluster
+    command: [mongod, --replSet, mongodb-repl-set]
+    depends_on:
+      - mongodb3
+  mongodb3:
+    image: mongo:4.0.14
+    restart: always
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=root
+    #   - MONGO_INITDB_ROOT_PASSWORD=example
+    #   - MONGODB_USER=user
+    #   - MONGODB_PASS=password
+    container_name: mongodb3
+    hostname: mongodb3
+    ports:
+      - 37017:27017
+    volumes:
+      - ./mongodb3:/data/db
+    networks:
+      - mongodb-cluster
+    command: [mongod, --replSet, mongodb-repl-set]
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - main
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - ./esdata1:/usr/share/elasticsearch/data
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.5.1
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - main
+    environment:
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+  mongo-connector:
+    build: ./mongo-connector
+    container_name: mongo-connector
+    depends_on:
+      - elasticsearch
+    command: mongo-connector -m mongodb1 -t elasticsearch:9200 -d elastic2_doc_manager --continue-on-error --auto-commit-interval=0
+    networks:
+      - mongodb-cluster
+      - main

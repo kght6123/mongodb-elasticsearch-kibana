@@ -1,0 +1,2 @@
+cluster.name: "mongodb-repl-set"
+network.host: 0.0.0.0
