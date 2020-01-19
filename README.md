@@ -4,13 +4,40 @@ MongoDBに全文検索エンジンを導入しようと思い構築したDocker�
 
 後日、イメージサイズを抑える工夫や、k8sに対応したりする予定です。
 
+（MongoDBのクラスタは認証無しです。）
+
 ## Environment
 
 ホストOSは、Linuxを想定しています。
 
 Docker（docker-compose）のインストール済みが前提条件です。
 
-MongoDB Compassがあると便利です。
+## MongoDBに接続する
+
+### 認証なし
+
+PRIMARYにつなぐ
+
+#### MongoDB Compassでつなぐ
+
+```
+mongodb://127.0.0.1:37017/admin
+```
+
+#### mongoコマンドでつなぐ
+
+```sh
+sudo docker exec -it mongodb3 mongo
+> db.mycollection.insert({name : 'sample'})
+```
+
+#### MongoExpressでつなぐ
+
+http://localhost:8081/
+
+## Kibana(ElasticSearch)に接続する
+
+http://127.0.0.1:5601/
 
 ## Author
 * [**@kght6123**](https://twitter.com/kght6123)

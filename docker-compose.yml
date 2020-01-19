@@ -28,7 +28,7 @@ services:
     command: [mongod, --replSet, mongodb-repl-set]
     depends_on:
       - mongodb2
-      - mongodb3
+      #- mongodb3
   mongodb2:
     image: mongo:4.0.14
     restart: always
@@ -65,6 +65,18 @@ services:
     networks:
       - mongodb-cluster
     command: [mongod, --replSet, mongodb-repl-set]
+  mongo-express:
+    container_name: mongo-express
+    ports:
+      - '8081:8081'
+    environment:
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_SERVER=mongodb3
+    image: mongo-express
+    networks:
+      - mongodb-cluster
+    depends_on:
+      - mongodb1
   elasticsearch:
     build: ./elasticsearch
     container_name: elasticsearch
