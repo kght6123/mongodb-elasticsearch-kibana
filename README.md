@@ -1,6 +1,6 @@
 # MongoDB and Elasticsearch on Docker
 
-PMongoDBに全文検索エンジンを導入しようと思い構築したDocker環境です。
+MongoDBに全文検索エンジンを導入しようと思い構築したDocker環境です。
 
 後日、イメージサイズを抑える工夫や、k8sに対応したりする予定です。
 
