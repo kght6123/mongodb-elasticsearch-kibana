@@ -94,7 +94,8 @@ services:
     container_name: mongo-connector
     depends_on:
       - elasticsearch
-    command: mongo-connector -m mongodb1 -t elasticsearch:9200 -d elastic2_doc_manager --continue-on-error --auto-commit-interval=0
+      - mongodb1
+    command: -m mongodb1 -t elasticsearch:9200 -d elastic2_doc_manager --continue-on-error --auto-commit-interval=0
     networks:
       - mongodb-cluster
       - main
