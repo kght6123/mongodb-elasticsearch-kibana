@@ -1,2 +1,4 @@
 cluster.name: "mongodb-repl-set"
 network.host: 0.0.0.0
+http.cors.allow-origin: /https?:\/\/localhost(:[0-9]+)?/
+http.cors.enabled: true
