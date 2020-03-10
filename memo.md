@@ -23,10 +23,17 @@ $ sudo rm -Rf mongodb1
 # クラスタの設定をする
 $ sudo docker exec -it mongodb1 mongo #admin -u root -p
 #> db = (new Mongo('localhost:27017')).getDB('admin')
-> config = {"_id" : "mongodb-repl-set","members" : [{"_id" : 0,"host" : "mongodb1:27017"},{"_id" : 1,"host" : "mongodb2:27017"},{"_id" : 2,"host" : "mongodb3:27017"}]}
+> config = {"_id" : "mongodb-repl-set","members" : [{"_id" : 0,"host" : "mongodb1:27017","priority" : 2},{"_id" : 1,"host" : "mongodb2:27017","priority" : 1},{"_id" : 2,"host" : "mongodb3:27017","priority" : 1}]}
 > #use admin
 > #db.auth("root","example") # Error: Authentication failed.
 > rs.initiate(config) # "errmsg" : "command replSetInitiate requires authentication",
+# 後からクラスタの設定を変える
+> config = rs.config()
+> config.members[0].priority = 1
+> config.members[1].priority = 1
+> config.members[2].priority = 2 # mongodb3をプライマリにする
+> rs.reconfig(config)
+> rs.status()
 # 余裕があったらこれ試す(認証キーがいるっぽい、認証付きのときは。今は認証なし)　https://qiita.com/usabarashi/items/3854a1da0e47feb93ba0
 mongodb-repl-set:SECONDARY> db.mycollection.insert({name : 'sample'})
 WriteResult({ "nInserted" : 1 })
