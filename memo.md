@@ -96,3 +96,73 @@ $ sudo docker exec -it mongodb3 mongo # PRIMARYに接続
 > show collections
 questions
 ```
+
+## Kuromojiの全文検索設定
+
+一度、MongoDBの既存のコレクションのすべてのドキュメントを削除して、ElasticSearchのインデックスを作り直す
+
+https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-kuromoji-analyzer.html
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/removal-of-types.html
+
+```sh
+sudo apt install curl
+curl -H "Content-Type: application/json" -X DELETE 'localhost:9200/admin'
+curl -H "Content-Type: application/json" -X PUT 'localhost:9200/admin' -d '
+{
+  "settings": {
+    "analysis": {
+      "tokenizer": {
+        "kuromoji_user_dict": {
+          "type": "kuromoji_tokenizer",
+          "mode": "search",
+          "user_dictionary_rules": []
+        }
+      },
+      "analyzer": {
+        "my_kuromoji_analyzer": {
+          "type": "custom",
+          "tokenizer": "kuromoji_user_dict",
+          "filter": [
+            "kuromoji_baseform",
+            "kuromoji_number",
+            "katakana_readingform",
+            "katakana_stemmer",
+            "ja_stop"
+          ]
+        }
+      },
+      "filter" : {
+        "katakana_readingform" : {
+          "type" : "kuromoji_readingform",
+          "use_romaji" : false
+        },
+        "katakana_stemmer": {
+          "type": "kuromoji_stemmer",
+          "minimum_length": 4
+        },
+        "ja_stop": {
+          "type": "ja_stop",
+          "stopwords": []
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "my_kuromoji_analyzer"
+      },
+      "body": {
+        "type": "text",
+        "analyzer": "my_kuromoji_analyzer"
+      },
+      "tags": {
+        "type": "text",
+        "analyzer": "my_kuromoji_analyzer"
+      }
+    }
+  }
+}'
+```
