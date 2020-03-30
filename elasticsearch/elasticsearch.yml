@@ -2,3 +2,25 @@ cluster.name: "mongodb-repl-set"
 network.host: 0.0.0.0
 http.cors.allow-origin: /https?:\/\/localhost(:[0-9]+)?/
 http.cors.enabled: true
+
+# index:
+#     analysis:
+#         char_filter:
+#             kanji_iteration_mark:
+#                 type: kuromoji_iteration_mark
+#                 normalize_kanji: true
+#                 normalize_kana: false
+#             kana_iteration_mark:
+#                 type: kuromoji_iteration_mark
+#                 normalize_kanji: false
+#                 normalize_kana: true
+#         analyzer:
+#             im_default:
+#                 tokenizer: standard
+#                 char_filter: [kuromoji_iteration_mark]
+#             im_kanji_only:
+#                 tokenizer: standard
+#                 char_filter: [kanji_iteration_mark]
+#             im_kana_only:
+#                 tokenizer: standard
+#                 char_filter: [kana_iteration_mark]

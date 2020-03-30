@@ -166,3 +166,140 @@ curl -H "Content-Type: application/json" -X PUT 'localhost:9200/admin' -d '
   }
 }'
 ```
+
+## Kuromijiのインストール済みを確認してアナライズを実行
+
+https://medium.com/hello-elasticsearch/elasticsearch-833a0704e44b
+
+```sh
+$ curl -X GET localhost:9200/_nodes/plugins?pretty
+{
+  "_nodes" : {
+    "total" : 1,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "cluster_name" : "mongodb-repl-set",
+  "nodes" : {
+    "7pHWKPo4RXm8FA8Xgf8lbw" : {
+      "name" : "c07bf8773083",
+      "transport_address" : "172.27.0.2:9300",
+      "host" : "172.27.0.2",
+      "ip" : "172.27.0.2",
+      "version" : "7.5.1",
+      "build_flavor" : "default",
+      "build_type" : "docker",
+      "build_hash" : "3ae9ac9a93c95bd0cdc054951cf95d88e1e18d96",
+      "roles" : [
+        "ingest",
+        "master",
+        "data",
+        "ml"
+      ],
+      "attributes" : {
+        "ml.machine_memory" : "8164110336",
+        "xpack.installed" : "true",
+        "ml.max_open_jobs" : "20"
+      },
+      "plugins" : [
+        {
+          "name" : "analysis-kuromoji",
+          "version" : "7.5.1",
+          "elasticsearch_version" : "7.5.1",
+          "java_version" : "1.8",
+          "description" : "The Japanese (kuromoji) Analysis plugin integrates Lucene kuromoji analysis module into elasticsearch.",
+          "classname" : "org.elasticsearch.plugin.analysis.kuromoji.AnalysisKuromojiPlugin",
+          "extended_plugins" : [ ],
+          "has_native_controller" : false
+        }
+      ],
+```
+
+
+```sh
+curl -H "Content-Type: application/json" -X GET 'localhost:9200/_analyze' -d '
+{
+  "analyzer" : "standard",
+  "text" : "this is a test"
+}
+'
+```
+
+```sh
+curl -H "Content-Type: application/json" -X GET 'localhost:9200/_analyze' -d '
+{
+  "analyzer" : "im_default",
+  "text" : "ところゞゝゝ、ジヾが、時々、馬鹿々々しい"
+}
+'
+```
+
+### open, closeしてインデックスの設定変更
+
+```sh
+curl -H "Content-Type: application/json" -X POST 'localhost:9200/admin/_close'
+curl -H "Content-Type: application/json" -X PUT 'localhost:9200/admin/_settings' -d '
+{
+  "settings": {
+    "analysis": {
+      "tokenizer": {
+        "kuromoji_user_dict": {
+          "type": "kuromoji_tokenizer",
+          "mode": "search",
+          "user_dictionary_rules": []
+        }
+      },
+      "analyzer": {
+        "my_kuromoji_analyzer": {
+          "type": "custom",
+          "tokenizer": "kuromoji_user_dict",
+          "filter": [
+            "kuromoji_baseform",
+            "kuromoji_number",
+            "katakana_readingform",
+            "katakana_stemmer",
+            "ja_stop"
+          ]
+        }
+      },
+      "filter" : {
+        "katakana_readingform" : {
+          "type" : "kuromoji_readingform",
+          "use_romaji" : false
+        },
+        "katakana_stemmer": {
+          "type": "kuromoji_stemmer",
+          "minimum_length": 4
+        },
+        "ja_stop": {
+          "type": "ja_stop",
+          "stopwords": []
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "my_kuromoji_analyzer"
+      },
+      "body": {
+        "type": "text",
+        "analyzer": "my_kuromoji_analyzer"
+      },
+      "tags": {
+        "type": "text",
+        "analyzer": "my_kuromoji_analyzer"
+      }
+    }
+  }
+}'
+curl -H "Content-Type: application/json" -X POST 'localhost:9200/admin/_open'
+```
+
+## Sudachiを使うても。。。
+
+https://github.com/WorksApplications/elasticsearch-sudachi
+https://tsgkdt.hatenablog.jp/entry/2019/04/09/180738
+https://qiita.com/t2hk/items/a5b647f4ca764b073a47
