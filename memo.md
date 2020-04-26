@@ -303,3 +303,20 @@ curl -H "Content-Type: application/json" -X POST 'localhost:9200/admin/_open'
 https://github.com/WorksApplications/elasticsearch-sudachi
 https://tsgkdt.hatenablog.jp/entry/2019/04/09/180738
 https://qiita.com/t2hk/items/a5b647f4ca764b073a47
+
+## mongo-connectorが起動しない件について
+
+dockerコンテナを単体で起動してログを調べる
+
+```sh
+$ sudo docker-compose logs mongo-connector
+Attaching to mongo-connector
+mongo-connector    | Logging to /mongo-connector.log.
+$ sudo docker ps -a
+$ sudo docker run -it --entrypoint=/bin/sh docker_mongo-connector
+
+$ sudo docker-compose run --service-ports --no-deps --entrypoint /bin/sh mongo-connector
+$ mongo-connector -m mongodb1 -t elasticsearch:9200 -d elastic2_doc_manager --continue-on-error --auto-commit-interval=0
+$ vi mongo-connector.log
+# 2020-04-26 04:20:26,151 [ERROR] mongo_connector.connector:381 - No replica set at "mongodb1"! A rep
+```
