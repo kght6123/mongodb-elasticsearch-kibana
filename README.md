@@ -12,6 +12,21 @@ MongoDBに全文検索エンジンを導入しようと思い構築したDocker�
 
 Docker（docker-compose）のインストール済みが前提条件です。
 
+## Settings
+
+```sh
+# クラスタの設定をする
+$ sudo docker exec -it mongodb1 mongo
+> config = {"_id" : "mongodb-repl-set","members" : [{"_id" : 0,"host" : "mongodb1:27017","priority" : 1},{"_id" : 1,"host" : "mongodb2:27017","priority" : 1},{"_id" : 2,"host" : "mongodb3:27017","priority" : 2}]}
+> rs.initiate(config)
+# クラスタのプライマリの設定を変えるとき
+> config = rs.config()
+> config.members[0].priority = 1
+> config.members[1].priority = 1
+> config.members[2].priority = 2 # mongodb3をプライマリにする
+> rs.reconfig(config)
+```
+
 ## MongoDBに接続する
 
 ### 認証なし
@@ -40,6 +55,7 @@ http://localhost:8081/
 http://127.0.0.1:5601/
 
 ## Author
+
 * [**@kght6123**](https://twitter.com/kght6123)
 
 ## Contacts
